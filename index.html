@@ -66,11 +66,7 @@
   </form>
 
   <script>
-    // 🟢 Workday Logo as Base64 (small size PNG)
-    const workdayLogoBase64 =
-      "iVBORw0KGgoAAAANSUhEUgAAAMgAAABICAMAAABbVzpUAAAAZlBMVEX///8AAADl5eXp6en4+PjY2Njv7+/R0dHR0dHDw8Pe3t7V1dW+vr6/v7/Y2NijoyPZ2dnV1dWUlJTs7Ozh4eGWlpbExMSmpqbx8fG/v7+IiIiqqqqlpaWbm5vQ0NBramqTk5Pt7e3c3NysrKxubm7FxMQ9cnZgAAABwklEQVR4nO3a2XKCMBCF4QhJKWlQUP//H9WROl2nTdqfSbz8zBwyAbYajUaj0Wg0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoND5ge35MSgFmczi/HGmtZ8PT0xzTsh87OFeRVszMOMkgpaZJxhyW5HajXGHPZcZ1ZhJZKoqImu0x/qhKhI/kFPYfxEiUgpvyCK53oXz5QtMGmZMySFW6yxlPgJxuTFRO1S20MQ0VfYmTuYt25lC2r9tyugp8zsd0btPQbY1cdto4gm/fk7WUSW82Th9Ba2KrEyHWweSML7dMSjW7enflPgzP2PajE3WoajvYwMt3j0hTlx7YquYF6py0uDC/aMqSH3Y6Z5FZMLF2hO59vL9XxN7I0txsiXyBHr3x+n9r9YtxQ6DXrAv6upCEroD7PrJxGF1RrLbXZyZ7KaYzffnXWdx8NQ9p9lXO29jvD9ZrcdZtPlrq2p7U+0S1uJjpj+0ZSv9AQirxHwFCrZEsAAAAASUVORK5CYII=";
-
-    // 🟢 PDF Resume Generator
+    // 🟢 PDF Resume Generator (with Logo)
     function downloadPDF() {
       let fname = document.getElementById("firstName").value;
       let mname = document.getElementById("middleName").value;
@@ -103,9 +99,9 @@
       printWindow.print();
     }
 
-    // 🟢 Word Resume Generator
+    // 🟢 Word Resume Generator (without Logo)
     document.getElementById("downloadWord").addEventListener("click", async () => {
-      const { Document, Packer, Paragraph, TextRun, ImageRun } = window.docx;
+      const { Document, Packer, Paragraph, TextRun } = window.docx;
 
       let fname = document.getElementById("firstName").value;
       let mname = document.getElementById("middleName").value;
@@ -114,31 +110,17 @@
       let email = document.getElementById("email").value;
       let summary = document.getElementById("summary").value;
 
-      // Convert Base64 logo to Uint8Array
-      function base64ToUint8Array(base64) {
-        const binary = atob(base64);
-        const len = binary.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        return bytes;
-      }
-
-      const logoImage = base64ToUint8Array(workdayLogoBase64);
-
       const doc = new Document({
         sections: [{
           children: [
             new Paragraph({
               children: [
                 new TextRun({ text: email + "    ", color: "0563C1", size: 20 }),
-                new ImageRun({ data: logoImage, transformation: { width: 80, height: 30 } }),
+                new TextRun({ text: fname + " " + mname + " " + lname, bold: true, size: 28 }),
                 new TextRun({ text: "    " + mobile, size: 20 }),
               ],
               alignment: "center"
             }),
-            new Paragraph({ children: [ new TextRun({ text: fname + " " + mname + " " + lname, bold: true, size: 28 }) ], alignment: "center" }),
             new Paragraph(" "),
             new Paragraph({ children: [ new TextRun({ text: "PROFILE SUMMARY", bold: true, size: 24, color:"2c3e50" }) ] }),
             new Paragraph(summary),
