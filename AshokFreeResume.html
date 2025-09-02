@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Free Resume Builder</title>
+  <script src="https://unpkg.com/docx@8.3.2/build/index.umd.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    form {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 400px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      text-align: left;
+    }
+    input, select {
+      width: 95%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      background: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Free Resume Builder (Workday)</h2>
+
+  <form id="resumeForm">
+    <label>First Name: <input type="text" id="firstName"></label>
+    <label>Middle Name: <input type="text" id="middleName"></label>
+    <label>Last Name: <input type="text" id="lastName"></label>
+    <label>Mobile Number: <input type="text" id="mobile"></label>
+    <label>Email: <input type="email" id="email"></label>
+
+    <h3>Experience</h3>
+    <label>Years:
+      <select id="expYears">
+        <option value="0">0</option>
+        <script>
+          for (let i = 1; i <= 35; i++) {
+            document.write('<option value="'+i+'">'+i+'</option>');
+          }
+        </script>
+      </select>
+    </label>
+
+    <label>Months:
+      <select id="expMonths">
+        <option value="0">0</option>
+        <script>
+          for (let i = 1; i <= 11; i++) {
+            document.write('<option value="'+i+'">'+i+'</option>');
+          }
+        </script>
+      </select>
+    </label>
+
+    <label>Days:
+      <select id="expDays">
+        <option value="0">0</option>
+        <script>
+          for (let i = 1; i <= 31; i++) {
+            document.write('<option value="'+i+'">'+i+'</option>');
+          }
+        </script>
+      </select>
+    </label>
+
+    <button type="button" onclick="generateResume()">Download Resume</button>
+  </form>
+
+  <script>
+    async function generateResume() {
+      const { Document, Packer, Paragraph, TextRun } = window.docx;
+
+      let fname = document.getElementById("firstName").value;
+      let mname = document.getElementById("middleName").value;
+      let lname = document.getElementById("lastName").value;
+      let mobile = document.getElementById("mobile").value;
+      let email = document.getElementById("email").value;
+      let expYears = document.getElementById("expYears").value;
+      let expMonths = document.getElementById("expMonths").value;
+      let expDays = document.getElementById("expDays").value;
+
+      let doc = new Document({
+        sections: [{
+          children: [
+            new Paragraph({
+              children: [ new TextRun({ text: "Resume", bold: true, size: 32 }) ]
+            }),
+            new Paragraph(" "),
+            new Paragraph("Name: " + fname + " " + mname + " " + lname),
+            new Paragraph("Mobile: " + mobile),
+            new Paragraph("Email: " + email),
+            new Paragraph("Experience: " + expYears + " Years, " + expMonths + " Months, " + expDays + " Days"),
+          ]
+        }]
+      });
+
+      Packer.toBlob(doc).then(blob => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "resume.docx";
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
