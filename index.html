@@ -59,73 +59,89 @@
     <label>Last Name: <input type="text" id="lastName"></label>
     <label>Mobile Number: <input type="text" id="mobile"></label>
     <label>Email: <input type="email" id="email"></label>
+    <label>Profile Summary: <input type="text" id="summary"></label>
 
-    <h3>Experience</h3>
-    <label>Years:
-      <select id="expYears">
-        <option value="0">0</option>
-        <script>
-          for (let i = 1; i <= 35; i++) {
-            document.write('<option value="'+i+'">'+i+'</option>');
-          }
-        </script>
-      </select>
-    </label>
-
-    <label>Months:
-      <select id="expMonths">
-        <option value="0">0</option>
-        <script>
-          for (let i = 1; i <= 11; i++) {
-            document.write('<option value="'+i+'">'+i+'</option>');
-          }
-        </script>
-      </select>
-    </label>
-
-    <label>Days:
-      <select id="expDays">
-        <option value="0">0</option>
-        <script>
-          for (let i = 1; i <= 31; i++) {
-            document.write('<option value="'+i+'">'+i+'</option>');
-          }
-        </script>
-      </select>
-    </label>
-
-    <!-- Word Resume Button -->
-    <button type="button" onclick="generateResume()">Download Word Resume</button>
-
-    <!-- PDF Resume Button -->
     <button type="button" onclick="downloadPDF()">Download PDF Resume</button>
+    <button type="button" id="downloadWord">Download Word Resume</button>
   </form>
 
   <script>
-    // 🟢 Word Resume Generate
-    async function generateResume() {
-      const { Document, Packer, Paragraph, TextRun } = window.docx;
+    // 🟢 Workday Logo as Base64 (small size PNG)
+    const workdayLogoBase64 =
+      "iVBORw0KGgoAAAANSUhEUgAAAMgAAABICAMAAABbVzpUAAAAZlBMVEX///8AAADl5eXp6en4+PjY2Njv7+/R0dHR0dHDw8Pe3t7V1dW+vr6/v7/Y2NijoyPZ2dnV1dWUlJTs7Ozh4eGWlpbExMSmpqbx8fG/v7+IiIiqqqqlpaWbm5vQ0NBramqTk5Pt7e3c3NysrKxubm7FxMQ9cnZgAAABwklEQVR4nO3a2XKCMBCF4QhJKWlQUP//H9WROl2nTdqfSbz8zBwyAbYajUaj0Wg0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoND5ge35MSgFmczi/HGmtZ8PT0xzTsh87OFeRVszMOMkgpaZJxhyW5HajXGHPZcZ1ZhJZKoqImu0x/qhKhI/kFPYfxEiUgpvyCK53oXz5QtMGmZMySFW6yxlPgJxuTFRO1S20MQ0VfYmTuYt25lC2r9tyugp8zsd0btPQbY1cdto4gm/fk7WUSW82Th9Ba2KrEyHWweSML7dMSjW7enflPgzP2PajE3WoajvYwMt3j0hTlx7YquYF6py0uDC/aMqSH3Y6Z5FZMLF2hO59vL9XxN7I0txsiXyBHr3x+n9r9YtxQ6DXrAv6upCEroD7PrJxGF1RrLbXZyZ7KaYzffnXWdx8NQ9p9lXO29jvD9ZrcdZtPlrq2p7U+0S1uJjpj+0ZSv9AQirxHwFCrZEsAAAAASUVORK5CYII=";
+
+    // 🟢 PDF Resume Generator
+    function downloadPDF() {
+      let fname = document.getElementById("firstName").value;
+      let mname = document.getElementById("middleName").value;
+      let lname = document.getElementById("lastName").value;
+      let mobile = document.getElementById("mobile").value;
+      let email = document.getElementById("email").value;
+      let summary = document.getElementById("summary").value;
+
+      let resumeHTML = `
+        <div style="font-family: Arial; padding: 20px;">
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#3498db; font-size:14px;">${email}</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Workday_logo.png" alt="Workday Logo" style="height:40px;">
+            <span style="color:#444; font-size:14px;">${mobile}</span>
+          </div>
+          <h2 style="margin:5px 0; color:#444; text-align:center;">${fname} ${mname} ${lname}</h2>
+          <hr style="margin:10px 0;">
+          <!-- Profile Summary -->
+          <h3 style="color:#2c3e50; margin:10px 0;">PROFILE SUMMARY</h3>
+          <p style="text-align:justify;">
+            ${summary}
+          </p>
+        </div>
+      `;
+
+      let printWindow = window.open('', '_blank', 'width=800,height=600');
+      printWindow.document.write(`<html><head><title>Resume</title></head><body>${resumeHTML}</body></html>`);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    // 🟢 Word Resume Generator
+    document.getElementById("downloadWord").addEventListener("click", async () => {
+      const { Document, Packer, Paragraph, TextRun, ImageRun } = window.docx;
 
       let fname = document.getElementById("firstName").value;
       let mname = document.getElementById("middleName").value;
       let lname = document.getElementById("lastName").value;
       let mobile = document.getElementById("mobile").value;
       let email = document.getElementById("email").value;
-      let expYears = document.getElementById("expYears").value;
-      let expMonths = document.getElementById("expMonths").value;
-      let expDays = document.getElementById("expDays").value;
+      let summary = document.getElementById("summary").value;
 
-      let doc = new Document({
+      // Convert Base64 logo to Uint8Array
+      function base64ToUint8Array(base64) {
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      const logoImage = base64ToUint8Array(workdayLogoBase64);
+
+      const doc = new Document({
         sections: [{
           children: [
             new Paragraph({
-              children: [ new TextRun({ text: "Resume", bold: true, size: 32 }) ]
+              children: [
+                new TextRun({ text: email + "    ", color: "0563C1", size: 20 }),
+                new ImageRun({ data: logoImage, transformation: { width: 80, height: 30 } }),
+                new TextRun({ text: "    " + mobile, size: 20 }),
+              ],
+              alignment: "center"
             }),
+            new Paragraph({ children: [ new TextRun({ text: fname + " " + mname + " " + lname, bold: true, size: 28 }) ], alignment: "center" }),
             new Paragraph(" "),
-            new Paragraph("Name: " + fname + " " + mname + " " + lname),
-            new Paragraph("Mobile: " + mobile),
-            new Paragraph("Email: " + email),
-            new Paragraph("Experience: " + expYears + " Years, " + expMonths + " Months, " + expDays + " Days"),
+            new Paragraph({ children: [ new TextRun({ text: "PROFILE SUMMARY", bold: true, size: 24, color:"2c3e50" }) ] }),
+            new Paragraph(summary),
           ]
         }]
       });
@@ -136,12 +152,7 @@
         link.download = "resume.docx";
         link.click();
       });
-    }
-
-    // 🟢 PDF Resume Generate (Browser Print)
-    function downloadPDF() {
-      window.print();
-    }
+    });
   </script>
 </body>
 </html>
